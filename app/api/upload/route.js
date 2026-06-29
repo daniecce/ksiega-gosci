@@ -1,57 +1,39 @@
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
-import { NextResponse } from "next/server"
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
+
+const r2 = new S3Client({
+  region: "auto",
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+})
 
 export async function POST(request) {
   try {
-    // 1. Odbierz pliki z requestu
     const formData = await request.formData()
     const pliki = formData.getAll("pliki")
 
     if (pliki.length === 0) {
-      return NextResponse.json(
-        { error: "Brak plików" },
-        { status: 400 }
-      )
+      return Response.json({ error: "Brak plików" }, { status: 400 })
     }
-
-    // 2. Stwórz folder na zdjęcia jeśli nie istnieje
-    const folderZdjec = join(process.cwd(), "public", "zdjecia")
-    await mkdir(folderZdjec, { recursive: true })
-
-    // 3. Zapisz każdy plik na dysku
-    const zapisanePliki = []
 
     for (const plik of pliki) {
-      // Zamień plik na dane binarne
       const bytes = await plik.arrayBuffer()
       const buffer = Buffer.from(bytes)
+      const nazwa = `${Date.now()}-${plik.name}`
 
-      // Stwórz unikalną nazwę pliku
-      const nazwaPliku = `${Date.now()}-${plik.name}`
-      const sciezka = join(folderZdjec, nazwaPliku)
-
-      // Zapisz na dysku
-      await writeFile(sciezka, buffer)
-
-      zapisanePliki.push({
-        nazwa: nazwaPliku,
-        url: `/zdjecia/${nazwaPliku}`,
-        rozmiar: plik.size,
-      })
+      await r2.send(new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET,
+        Key: nazwa,
+        Body: buffer,
+        ContentType: plik.type,
+      }))
     }
 
-    // 4. Zwróć odpowiedź
-    return NextResponse.json({
-      ok: true,
-      pliki: zapisanePliki,
-    })
-
+    return Response.json({ ok: true })
   } catch (blad) {
-    console.error("Błąd uploadu:", blad)
-    return NextResponse.json(
-      { error: "Błąd serwera" },
-      { status: 500 }
-    )
+    console.error(blad)
+    return Response.json({ ok: false, error: blad.message }, { status: 500 })
   }
 }

@@ -1,23 +1,28 @@
-import { readdir } from "fs/promises"
-import { join } from "path"
-import { NextResponse } from "next/server"
+import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3"
+
+const r2 = new S3Client({
+  region: "auto",
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+})
 
 export async function GET() {
   try {
-    // Odczytaj listę plików z folderu
-    const folderZdjec = join(process.cwd(), "public", "zdjecia")
-    const pliki = await readdir(folderZdjec)
-
-    // Zamień nazwy plików na obiekty z URL
-    const zdjecia = pliki.map((nazwa) => ({
-      nazwa: nazwa,
-      url: `/zdjecia/${nazwa}`,
+    const odpowiedz = await r2.send(new ListObjectsV2Command({
+      Bucket: process.env.R2_BUCKET,
     }))
 
-    return NextResponse.json({ ok: true, zdjecia })
+    const zdjecia = (odpowiedz.Contents || []).map((plik) => ({
+      nazwa: plik.Key,
+      url: `${process.env.R2_PUBLIC_URL}/${plik.Key}`,
+    }))
 
+    return Response.json({ zdjecia })
   } catch (blad) {
-    // Folder nie istnieje jeszcze - zwróć pustą listę
-    return NextResponse.json({ ok: true, zdjecia: [] })
+    console.error(blad)
+    return Response.json({ zdjecia: [] }, { status: 500 })
   }
 }

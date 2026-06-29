@@ -1,12 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    localPatterns: [
+    remotePatterns: [
       {
-        pathname: '/zdjecia/**',
+        protocol: "https",
+        hostname: "**.r2.dev",
       },
     ],
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig
