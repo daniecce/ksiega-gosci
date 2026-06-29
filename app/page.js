@@ -3,39 +3,52 @@ import Image from "next/image"
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-6">
-      
+    <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+
       {/* Karta eventu */}
-      <div className="bg-gray-800 rounded-3xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center gap-6">
-        
+      <div className="w-full max-w-sm flex flex-col items-center gap-8">
+
         {/* Zdjęcie pary */}
-        <Image
-          src="/para.jpg"
-          alt="Karolina i Daniel"
-          width={120}
-          height={120}
-          className="rounded-full object-cover w-32 h-32"
-        />
+        <div className="relative">
+          <Image
+            src="/para.jpg"
+            alt="Karolina i Daniel"
+            width={140}
+            height={140}
+            className="rounded-full object-cover w-36 h-36 shadow-lg"
+          />
+        </div>
 
         {/* Tytuł */}
         <div className="text-center">
-          <h1 className="text-white text-2xl font-semibold">
+          <h1 className="text-gray-900 text-3xl font-semibold tracking-tight">
             Wesele Karoliny i Daniela
           </h1>
-          <p className="text-gray-400 text-sm mt-2">
+          <p className="text-gray-400 text-sm mt-2 tracking-wide uppercase">
             11 Lipca 2026 · Miodowy Zakątek
           </p>
         </div>
 
         {/* Przyciski */}
         <div className="w-full flex flex-col gap-3">
-          <Link href="/upload" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-4 rounded-2xl text-lg transition-colors text-center block">
+          <Link
+            href="/upload"
+            className="w-full bg-black hover:bg-gray-800 text-white font-medium py-4 rounded-2xl text-base transition-colors text-center block"
+          >
             📷 Dodaj zdjęcia
           </Link>
-          <Link href="/gallery" className="w-full bg-gray-800 hover:bg-gray-700 text-white font-medium py-4 rounded-2xl text-lg transition-colors text-center block">
+          <Link
+            href="/gallery"
+            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-4 rounded-2xl text-base transition-colors text-center block"
+          >
             🖼️ Zobacz galerię
           </Link>
         </div>
+
+        {/* Stopka */}
+        <p className="text-gray-300 text-xs tracking-wide">
+          WIRTUALNA KSIĘGA GOŚCI
+        </p>
 
       </div>
     </main>
