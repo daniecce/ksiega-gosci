@@ -25,50 +25,49 @@ export default function Gallery() {
         setLadowanie(false)
       }
     }
-
     pobierzZdjecia()
   }, [])
 
   return (
-    <main className="min-h-screen bg-gray-950 p-6">
+    <main className="min-h-screen bg-white p-6">
 
       {/* Nagłówek */}
       <div className="max-w-sm mx-auto mb-6 flex items-center justify-between">
-        <Link href="/" className="text-gray-400 hover:text-white text-sm transition-colors">
+        <Link href="/" className="text-gray-400 hover:text-gray-600 text-sm transition-colors">
           ← Wróć
         </Link>
-        <h1 className="text-white font-semibold">
+        <h1 className="text-gray-900 font-semibold tracking-tight">
           Galeria gości
         </h1>
-        <span className="text-gray-500 text-sm">
+        <span className="text-gray-400 text-sm">
           {zdjecia.length} zdjęć
         </span>
       </div>
 
       {/* Ładowanie */}
       {ladowanie && (
-        <div className="max-w-sm mx-auto text-center py-12">
-          <p className="text-gray-400">Ładowanie zdjęć...</p>
+        <div className="max-w-sm mx-auto text-center py-16">
+          <p className="text-gray-400 text-sm">Ładowanie zdjęć...</p>
         </div>
       )}
 
       {/* Pusta galeria */}
       {!ladowanie && zdjecia.length === 0 && (
-        <div className="max-w-sm mx-auto text-center py-12 flex flex-col items-center gap-4">
+        <div className="max-w-sm mx-auto text-center py-16 flex flex-col items-center gap-4">
           <p className="text-5xl">📷</p>
-          <p className="text-white font-medium">Brak zdjęć</p>
-          <p className="text-gray-500 text-sm">Bądź pierwszy i dodaj zdjęcie!</p>
+          <p className="text-gray-900 font-medium">Brak zdjęć</p>
+          <p className="text-gray-400 text-sm">Bądź pierwszy i dodaj zdjęcie!</p>
         </div>
       )}
 
       {/* Siatka zdjęć i wideo */}
       {!ladowanie && zdjecia.length > 0 && (
-        <div className="max-w-sm mx-auto grid grid-cols-3 gap-2">
+        <div className="max-w-sm mx-auto grid grid-cols-3 gap-1">
           {zdjecia.map((zdjecie) => (
             <div
               key={zdjecie.nazwa}
               onClick={() => setWybrane(zdjecie)}
-              className="aspect-square bg-gray-800 rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-opacity relative"
+              className="aspect-square bg-gray-100 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative"
             >
               {czyWideo(zdjecie.nazwa) ? (
                 <>
@@ -78,8 +77,7 @@ export default function Gallery() {
                     muted
                     playsInline
                   />
-                  {/* Ikonka play na miniaturce */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                     <span className="text-2xl">▶️</span>
                   </div>
                 </>
@@ -100,7 +98,7 @@ export default function Gallery() {
       <div className="max-w-sm mx-auto mt-6">
         <Link
           href="/upload"
-          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-4 rounded-2xl text-lg transition-colors flex items-center justify-center"
+          className="w-full bg-black hover:bg-gray-800 text-white font-medium py-4 rounded-2xl text-base transition-colors flex items-center justify-center"
         >
           📷 Dodaj swoje zdjęcia
         </Link>
@@ -110,9 +108,9 @@ export default function Gallery() {
       {wybrane && (
         <div
           onClick={() => setWybrane(null)}
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6"
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-6"
         >
-          <div className="relative w-full max-w-sm aspect-square rounded-3xl overflow-hidden">
+          <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden">
             {czyWideo(wybrane.nazwa) ? (
               <video
                 src={wybrane.url}
@@ -130,6 +128,9 @@ export default function Gallery() {
               />
             )}
           </div>
+          <p className="absolute bottom-8 text-white/40 text-xs">
+            Kliknij gdziekolwiek aby zamknąć
+          </p>
         </div>
       )}
 
