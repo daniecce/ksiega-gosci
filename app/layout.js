@@ -17,7 +17,7 @@ export const metadata = {
   openGraph: {
     title: "Wesele Karoliny i Daniela 💍",
     description: "Dodaj swoje zdjęcia z naszego wyjątkowego dnia!",
-    images: ["/para.jpg"],
+    images: ["https://karolina-daniel-ksiega-gosci.vercel.app/para.jpg"],
   },
 };
 
