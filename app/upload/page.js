@@ -14,59 +14,61 @@ export default function Upload() {
   }
 
   async function wyslijPliki() {
-  if (pliki.length === 0) return
-
-  setWysylanie(true)
-
-  try {
-    // Spakuj pliki do FormData
-    const formData = new FormData()
-    for (const plik of pliki) {
-      formData.append("pliki", plik)
+    if (pliki.length === 0) return
+    setWysylanie(true)
+    try {
+      const formData = new FormData()
+      for (const plik of pliki) {
+        formData.append("pliki", plik)
+      }
+      const odpowiedz = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+      const dane = await odpowiedz.json()
+      if (dane.ok) {
+        setSukces(true)
+      } else {
+        alert("Błąd: " + dane.error)
+      }
+    } catch (blad) {
+      alert("Błąd połączenia z serwerem")
+      console.error(blad)
+    } finally {
+      setWysylanie(false)
     }
-
-    // Wyślij na serwer
-    const odpowiedz = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    })
-
-    const dane = await odpowiedz.json()
-
-    if (dane.ok) {
-      setSukces(true)
-    } else {
-      alert("Błąd: " + dane.error)
-    }
-
-  } catch (blad) {
-    alert("Błąd połączenia z serwerem")
-    console.error(blad)
-  } finally {
-    setWysylanie(false)
   }
-}
 
   // Ekran sukcesu
   if (sukces) {
     return (
-      <main className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-6">
-        <div className="bg-gray-900 rounded-3xl p-8 w-full max-w-sm shadow-2xl flex flex-col items-center gap-6 text-center">
-          <p className="text-6xl">✅</p>
-          <h1 className="text-white text-2xl font-semibold">
-            Dziękujemy!
-          </h1>
-          <p className="text-gray-400">
-            Twoje zdjęcia trafiły do księgi gości
-          </p>
-          <button
-            onClick={() => { setPliki([]); setSukces(false) }}
-            className="w-full bg-gray-800 hover:bg-gray-700 text-white font-medium py-4 rounded-2xl transition-colors"
-          >
-            Dodaj więcej
-          </button>
-          <Link href="/" className="text-gray-500 hover:text-white text-sm transition-colors">
-            Wróć na stronę główną
+      <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-sm flex flex-col items-center gap-6 text-center">
+          <p className="text-7xl">✅</p>
+          <div>
+            <h1 className="text-gray-900 text-2xl font-semibold tracking-tight">
+              Dziękujemy!
+            </h1>
+            <p className="text-gray-400 text-sm mt-2">
+              Twoje zdjęcia trafiły do księgi gości
+            </p>
+          </div>
+          <div className="w-full flex flex-col gap-3">
+            <button
+              onClick={() => { setPliki([]); setSukces(false) }}
+              className="w-full bg-black hover:bg-gray-800 text-white font-medium py-4 rounded-2xl transition-colors"
+            >
+              Dodaj więcej
+            </button>
+            <Link
+              href="/gallery"
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium py-4 rounded-2xl transition-colors text-center block"
+            >
+              Zobacz galerię
+            </Link>
+          </div>
+          <Link href="/" className="text-gray-300 hover:text-gray-500 text-sm transition-colors">
+            ← Wróć na stronę główną
           </Link>
         </div>
       </main>
@@ -74,29 +76,29 @@ export default function Upload() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-950 flex flex-col items-center justify-center p-6">
-      <div className="bg-gray-900 rounded-3xl p-8 w-full max-w-sm shadow-2xl flex flex-col gap-6">
+    <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-sm flex flex-col gap-6">
 
         {/* Przycisk powrotu */}
-        <Link href="/" className="text-gray-400 hover:text-white text-sm flex items-center gap-2 transition-colors">
+        <Link href="/" className="text-gray-400 hover:text-gray-600 text-sm transition-colors">
           ← Wróć
         </Link>
 
         {/* Nagłówek */}
         <div>
-          <h1 className="text-white text-xl font-semibold">
+          <h1 className="text-gray-900 text-2xl font-semibold tracking-tight">
             Dodaj swoje zdjęcia
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            Maksymalnie 20 plików
+            Zdjęcia i wideo · maksymalnie 20 plików
           </p>
         </div>
 
         {/* Strefa uploadu */}
-        <label className="border-2 border-dashed border-gray-700 rounded-2xl p-8 flex flex-col items-center gap-3 cursor-pointer hover:border-blue-500 transition-colors">
-          <p className="text-4xl">📷</p>
-          <p className="text-white font-medium">Stuknij aby wybrać</p>
-          <p className="text-gray-500 text-sm">Zdjęcia lub wideo</p>
+        <label className="border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-2xl p-10 flex flex-col items-center gap-3 cursor-pointer transition-colors bg-gray-50">
+          <p className="text-5xl">📷</p>
+          <p className="text-gray-900 font-medium">Stuknij aby wybrać</p>
+          <p className="text-gray-400 text-sm">Zdjęcia lub wideo</p>
           <input
             type="file"
             multiple
@@ -109,14 +111,14 @@ export default function Upload() {
         {/* Lista wybranych plików */}
         {pliki.length > 0 && (
           <div className="flex flex-col gap-2">
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-xs uppercase tracking-wide">
               Wybrano: {pliki.length} plików
             </p>
             {pliki.map((plik, index) => (
-              <div key={index} className="bg-gray-800 rounded-xl px-4 py-2">
-                <p className="text-white text-sm">{plik.name}</p>
-                <p className="text-gray-500 text-xs">
-                  {(plik.size / 1024 / 1024).toFixed(2)} MB
+              <div key={index} className="bg-gray-50 rounded-xl px-4 py-3 flex justify-between items-center">
+                <p className="text-gray-900 text-sm truncate">{plik.name}</p>
+                <p className="text-gray-400 text-xs ml-2 shrink-0">
+                  {(plik.size / 1024 / 1024).toFixed(1)} MB
                 </p>
               </div>
             ))}
@@ -127,7 +129,7 @@ export default function Upload() {
         <button
           onClick={wyslijPliki}
           disabled={pliki.length === 0 || wysylanie}
-          className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white font-medium py-4 rounded-2xl text-lg transition-colors"
+          className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-100 disabled:text-gray-300 text-white font-medium py-4 rounded-2xl text-base transition-colors"
         >
           {wysylanie ? "Wysyłanie..." : "Wyślij do księgi"}
         </button>
