@@ -13,7 +13,12 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Wesele Karoliny i Daniela 💍",
-  description: "Wirtualna księga gości",
+  description: "Dodaj swoje zdjęcia z naszego wyjątkowego dnia!",
+  openGraph: {
+    title: "Wesele Karoliny i Daniela 💍",
+    description: "Dodaj swoje zdjęcia z naszego wyjątkowego dnia!",
+    images: ["/para.jpg"],
+  },
 };
 
 export default function RootLayout({ children }) {
