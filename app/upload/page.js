@@ -3,19 +3,45 @@
 import { useState } from "react"
 import Link from "next/link"
 
+const MAX_PLIKOW = 20
+const MAX_ZDJECIE_MB = 15
+const MAX_WIDEO_MB = 100
+
 export default function Upload() {
   const [pliki, setPliki] = useState([])
   const [wysylanie, setWysylanie] = useState(false)
   const [sukces, setSukces] = useState(false)
+  const [blad, setBlad] = useState(null)
 
   function wybierzPliki(e) {
     const wybrane = Array.from(e.target.files)
+    setBlad(null)
+
+    // Sprawdź liczbę plików
+    if (wybrane.length > MAX_PLIKOW) {
+      setBlad(`Możesz wybrać maksymalnie ${MAX_PLIKOW} plików naraz`)
+      return
+    }
+
+    // Sprawdź rozmiary
+    for (const plik of wybrane) {
+      const isVideo = plik.type.startsWith("video/")
+      const limitMB = isVideo ? MAX_WIDEO_MB : MAX_ZDJECIE_MB
+      const rozmiarMB = plik.size / 1024 / 1024
+
+      if (rozmiarMB > limitMB) {
+        setBlad(`"${plik.name}" jest za duży. Limit: ${limitMB} MB`)
+        return
+      }
+    }
+
     setPliki(wybrane)
   }
 
   async function wyslijPliki() {
     if (pliki.length === 0) return
     setWysylanie(true)
+    setBlad(null)
     try {
       const formData = new FormData()
       for (const plik of pliki) {
@@ -29,11 +55,11 @@ export default function Upload() {
       if (dane.ok) {
         setSukces(true)
       } else {
-        alert("Błąd: " + dane.error)
+        setBlad("Błąd: " + dane.error)
       }
-    } catch (blad) {
-      alert("Błąd połączenia z serwerem")
-      console.error(blad)
+    } catch (err) {
+      setBlad("Błąd połączenia z serwerem")
+      console.error(err)
     } finally {
       setWysylanie(false)
     }
@@ -90,8 +116,16 @@ export default function Upload() {
             Dodaj swoje zdjęcia
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            Zdjęcia i wideo · maksymalnie 20 plików
+            Maksymalnie {MAX_PLIKOW} plików naraz
           </p>
+        </div>
+
+        {/* Limity */}
+        <div className="bg-gray-50 rounded-2xl px-4 py-3 flex flex-col gap-1">
+          <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Limity</p>
+          <p className="text-gray-600 text-sm">📷 Zdjęcia — max {MAX_ZDJECIE_MB} MB / plik</p>
+          <p className="text-gray-600 text-sm">🎬 Wideo — max {MAX_WIDEO_MB} MB / plik</p>
+          <p className="text-gray-600 text-sm">📁 Liczba plików — max {MAX_PLIKOW} naraz</p>
         </div>
 
         {/* Strefa uploadu */}
@@ -108,11 +142,18 @@ export default function Upload() {
           />
         </label>
 
+        {/* Komunikat błędu */}
+        {blad && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
+            <p className="text-red-600 text-sm">{blad}</p>
+          </div>
+        )}
+
         {/* Lista wybranych plików */}
         {pliki.length > 0 && (
           <div className="flex flex-col gap-2">
             <p className="text-gray-400 text-xs uppercase tracking-wide">
-              Wybrano: {pliki.length} plików
+              Wybrano: {pliki.length} / {MAX_PLIKOW} plików
             </p>
             {pliki.map((plik, index) => (
               <div key={index} className="bg-gray-50 rounded-xl px-4 py-3 flex justify-between items-center">
@@ -128,7 +169,7 @@ export default function Upload() {
         {/* Przycisk wyślij */}
         <button
           onClick={wyslijPliki}
-          disabled={pliki.length === 0 || wysylanie}
+          disabled={pliki.length === 0 || wysylanie || !!blad}
           className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-100 disabled:text-gray-300 text-white font-medium py-4 rounded-2xl text-base transition-colors"
         >
           {wysylanie ? "Wysyłanie..." : "Wyślij do księgi"}
