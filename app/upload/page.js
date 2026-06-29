@@ -4,8 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 
 const MAX_PLIKOW = 20
-const MAX_ZDJECIE_MB = 15
-const MAX_WIDEO_MB = 100
+const MAX_ZDJECIE_MB = 25
+const MAX_WIDEO_MB = 300
 
 export default function Upload() {
   const [pliki, setPliki] = useState([])
