@@ -4,6 +4,10 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 
+function czyWideo(nazwa) {
+  return nazwa.match(/\.(mp4|mov|webm)$/i)
+}
+
 export default function Gallery() {
   const [zdjecia, setZdjecia] = useState([])
   const [wybrane, setWybrane] = useState(null)
@@ -57,7 +61,7 @@ export default function Gallery() {
         </div>
       )}
 
-      {/* Siatka zdjęć */}
+      {/* Siatka zdjęć i wideo */}
       {!ladowanie && zdjecia.length > 0 && (
         <div className="max-w-sm mx-auto grid grid-cols-3 gap-2">
           {zdjecia.map((zdjecie) => (
@@ -66,12 +70,27 @@ export default function Gallery() {
               onClick={() => setWybrane(zdjecie)}
               className="aspect-square bg-gray-800 rounded-xl overflow-hidden cursor-pointer hover:opacity-80 transition-opacity relative"
             >
-              <Image
-                src={zdjecie.url}
-                alt={zdjecie.nazwa}
-                fill
-                className="object-cover"
-              />
+              {czyWideo(zdjecie.nazwa) ? (
+                <>
+                  <video
+                    src={zdjecie.url}
+                    className="w-full h-full object-cover"
+                    muted
+                    playsInline
+                  />
+                  {/* Ikonka play na miniaturce */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <span className="text-2xl">▶️</span>
+                  </div>
+                </>
+              ) : (
+                <Image
+                  src={zdjecie.url}
+                  alt={zdjecie.nazwa}
+                  fill
+                  className="object-cover"
+                />
+              )}
             </div>
           ))}
         </div>
@@ -94,12 +113,22 @@ export default function Gallery() {
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-6"
         >
           <div className="relative w-full max-w-sm aspect-square rounded-3xl overflow-hidden">
-            <Image
-              src={wybrane.url}
-              alt={wybrane.nazwa}
-              fill
-              className="object-contain"
-            />
+            {czyWideo(wybrane.nazwa) ? (
+              <video
+                src={wybrane.url}
+                className="w-full h-full object-contain"
+                controls
+                autoPlay
+                playsInline
+              />
+            ) : (
+              <Image
+                src={wybrane.url}
+                alt={wybrane.nazwa}
+                fill
+                className="object-contain"
+              />
+            )}
           </div>
         </div>
       )}
