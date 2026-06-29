@@ -12,7 +12,7 @@ export default function Home() {
           <h1 className="text-white text-2xl font-semibold">
             Wesele Karoliny i Daniel
           </h1>
-          <p className="text-gray-250 text-sm mt-2">
+          <p className="text-gray-200 text-sm mt-2">
             11 Lipca 2026 · Miodowy Zakątek
           </p>
         </div>
