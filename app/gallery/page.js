@@ -10,8 +10,9 @@ function czyWideo(nazwa) {
 
 export default function Gallery() {
   const [zdjecia, setZdjecia] = useState([])
-  const [wybrane, setWybrane] = useState(null)
+  const [wybranyIndex, setWybranyIndex] = useState(null)
   const [ladowanie, setLadowanie] = useState(true)
+  const [dotykStart, setDotykStart] = useState(null)
 
   useEffect(() => {
     async function pobierzZdjecia() {
@@ -27,6 +28,45 @@ export default function Gallery() {
     }
     pobierzZdjecia()
   }, [])
+
+  // Nawigacja klawiaturą (strzałki na komputerze)
+  function nastepneZdjecie() {
+    setWybranyIndex((i) => (i + 1) % zdjecia.length)
+  }
+
+  function poprzednieZdjecie() {
+    setWybranyIndex((i) => (i - 1 + zdjecia.length) % zdjecia.length)
+  }
+
+  // Nawigacja klawiaturą (strzałki na komputerze)
+  useEffect(() => {
+    function obslugaKlawiszy(e) {
+      if (wybranyIndex === null) return
+      if (e.key === "ArrowRight") setWybranyIndex((i) => (i + 1) % zdjecia.length)
+      if (e.key === "ArrowLeft") setWybranyIndex((i) => (i - 1 + zdjecia.length) % zdjecia.length)
+      if (e.key === "Escape") setWybranyIndex(null)
+    }
+    window.addEventListener("keydown", obslugaKlawiszy)
+    return () => window.removeEventListener("keydown", obslugaKlawiszy)
+  }, [wybranyIndex, zdjecia.length])
+
+  // Obsługa swipe na telefonie
+  function dotykPoczatek(e) {
+    setDotykStart(e.touches[0].clientX)
+  }
+
+  function dotykKoniec(e) {
+    if (dotykStart === null) return
+    const dotykKoniec = e.changedTouches[0].clientX
+    const roznica = dotykStart - dotykKoniec
+
+    if (roznica > 50) nastepneZdjecie()      // swipe w lewo = następne
+    if (roznica < -50) poprzednieZdjecie()    // swipe w prawo = poprzednie
+
+    setDotykStart(null)
+  }
+
+  const wybrane = wybranyIndex !== null ? zdjecia[wybranyIndex] : null
 
   return (
     <main className="min-h-screen bg-white p-6">
@@ -63,10 +103,10 @@ export default function Gallery() {
       {/* Siatka zdjęć i wideo */}
       {!ladowanie && zdjecia.length > 0 && (
         <div className="max-w-sm mx-auto grid grid-cols-3 gap-1">
-          {zdjecia.map((zdjecie) => (
+          {zdjecia.map((zdjecie, index) => (
             <div
               key={zdjecie.nazwa}
-              onClick={() => setWybrane(zdjecie)}
+              onClick={() => setWybranyIndex(index)}
               className="aspect-square bg-gray-100 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative"
             >
               {czyWideo(zdjecie.nazwa) ? (
@@ -104,13 +144,45 @@ export default function Gallery() {
         </Link>
       </div>
 
-      {/* Modal podglądu */}
+      {/* Modal podglądu z nawigacją */}
       {wybrane && (
         <div
-          onClick={() => setWybrane(null)}
           className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-6"
+          onTouchStart={dotykPoczatek}
+          onTouchEnd={dotykKoniec}
         >
-          <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden">
+          {/* Tło - klik zamyka */}
+          <div
+            className="absolute inset-0"
+            onClick={() => setWybranyIndex(null)}
+          />
+
+          {/* Przycisk zamknij */}
+          <button
+            onClick={() => setWybranyIndex(null)}
+            className="absolute top-6 right-6 text-white/60 hover:text-white text-2xl z-10 w-10 h-10 flex items-center justify-center"
+          >
+            ✕
+          </button>
+
+          {/* Strzałka lewo - tylko desktop */}
+          <button
+            onClick={(e) => { e.stopPropagation(); poprzednieZdjecie() }}
+            className="hidden sm:flex absolute left-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white text-3xl z-10 w-12 h-12 items-center justify-center"
+          >
+            ‹
+          </button>
+
+          {/* Strzałka prawo - tylko desktop */}
+          <button
+            onClick={(e) => { e.stopPropagation(); nastepneZdjecie() }}
+            className="hidden sm:flex absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white text-3xl z-10 w-12 h-12 items-center justify-center"
+          >
+            ›
+          </button>
+
+          {/* Zawartość */}
+          <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden z-10">
             {czyWideo(wybrane.nazwa) ? (
               <video
                 src={wybrane.url}
@@ -128,8 +200,10 @@ export default function Gallery() {
               />
             )}
           </div>
+
+          {/* Licznik pozycji */}
           <p className="absolute bottom-8 text-white/40 text-xs">
-            Kliknij gdziekolwiek aby zamknąć
+            {wybranyIndex + 1} / {zdjecia.length}
           </p>
         </div>
       )}
