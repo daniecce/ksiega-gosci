@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { useState, useEffect } from "react"
+import JSZip from "jszip"
 
 function czyWideo(nazwa) {
   return nazwa.match(/\.(mp4|mov|webm)$/i)
@@ -44,6 +45,29 @@ export default function Admin() {
     } else {
       alert("Błąd: " + dane.error)
     }
+  }
+  
+  async function pobierzWszystko() {
+    if (zdjecia.length === 0) return
+
+    const zip = new JSZip()
+    const folder = zip.folder("zdjecia-wesele")
+
+    for (const zdjecie of zdjecia) {
+      const odpowiedz = await fetch(zdjecie.url)
+      const blob = await odpowiedz.blob()
+      folder.file(zdjecie.nazwa, blob)
+    }
+
+    const zawartosc = await zip.generateAsync({ type: "blob" })
+
+    // Stwórz link do pobrania i kliknij go automatycznie
+    const url = URL.createObjectURL(zawartosc)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = "wesele-zdjecia.zip"
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   // Ekran logowania
@@ -88,6 +112,12 @@ export default function Admin() {
           >
             🔄 Odśwież
           </button>
+          <button
+              onClick={pobierzWszystko}
+              className="bg-black hover:bg-gray-800 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+            >
+              ⬇️ Pobierz wszystko (ZIP)
+            </button>
         </div>
 
         {ladowanie && <p className="text-gray-400 text-sm">Ładowanie...</p>}
