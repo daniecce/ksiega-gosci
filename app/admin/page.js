@@ -52,16 +52,26 @@ export default function Admin() {
 
     const zip = new JSZip()
     const folder = zip.folder("zdjecia-wesele")
+    let bledy = 0
 
-    for (const zdjecie of zdjecia) {
-      const odpowiedz = await fetch(zdjecie.url)
-      const blob = await odpowiedz.blob()
-      folder.file(zdjecie.nazwa, blob)
+    for (let i = 0; i < zdjecia.length; i++) {
+      const zdjecie = zdjecia[i]
+      try {
+        const odpowiedz = await fetch(zdjecie.url)
+        if (!odpowiedz.ok) throw new Error(`HTTP ${odpowiedz.status}`)
+        const blob = await odpowiedz.blob()
+        folder.file(zdjecie.nazwa, blob)
+      } catch (err) {
+        console.error(`Błąd pobierania ${zdjecie.nazwa}:`, err)
+        bledy++
+      }
+    }
+
+    if (bledy > 0) {
+      alert(`Uwaga: ${bledy} plików nie udało się pobrać. Sprawdź konsolę.`)
     }
 
     const zawartosc = await zip.generateAsync({ type: "blob" })
-
-    // Stwórz link do pobrania i kliknij go automatycznie
     const url = URL.createObjectURL(zawartosc)
     const link = document.createElement("a")
     link.href = url
