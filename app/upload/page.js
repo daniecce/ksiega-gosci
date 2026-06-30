@@ -42,23 +42,42 @@ export default function Upload() {
     if (pliki.length === 0) return
     setWysylanie(true)
     setBlad(null)
+
     try {
-      const formData = new FormData()
       for (const plik of pliki) {
-        formData.append("pliki", plik)
+        // 1. Poproś serwer o przepustkę (presigned URL)
+        const odpowiedzPresign = await fetch("/api/presign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nazwa: plik.name,
+            typ: plik.type,
+            rozmiar: plik.size,
+          }),
+        })
+
+        const danePresign = await odpowiedzPresign.json()
+
+        if (!danePresign.ok) {
+          throw new Error(danePresign.error || "Błąd generowania przepustki")
+        }
+
+        // 2. Wyślij plik BEZPOŚREDNIO do R2 (omija limit Vercela)
+        const odpowiedzUpload = await fetch(danePresign.presignedUrl, {
+          method: "PUT",
+          headers: { "Content-Type": plik.type },
+          body: plik,
+        })
+
+        if (!odpowiedzUpload.ok) {
+          throw new Error(`Błąd wysyłania pliku "${plik.name}"`)
+        }
       }
-      const odpowiedz = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      })
-      const dane = await odpowiedz.json()
-      if (dane.ok) {
-        setSukces(true)
-      } else {
-        setBlad("Błąd: " + dane.error)
-      }
+
+      setSukces(true)
+
     } catch (err) {
-      setBlad("Błąd połączenia z serwerem")
+      setBlad(err.message || "Błąd połączenia z serwerem")
       console.error(err)
     } finally {
       setWysylanie(false)
