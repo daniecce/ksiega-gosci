@@ -76,15 +76,18 @@ npm run dev
 Połącz repozytorium z [Vercel](https://vercel.com), dodaj zmienne środowiskowe i gotowe.
 
 ## Struktura projektu
+
+```
 app/
 ├── page.js              # Strona główna eventu
 ├── upload/page.js       # Formularz uploadu
 ├── gallery/page.js      # Galeria zdjęć
 ├── admin/page.js        # Panel admina
 └── api/
-├── presign/route.js # Generowanie presigned URL do R2
-├── photos/route.js  # Pobieranie listy zdjęć
-└── delete/route.js  # Usuwanie zdjęć
+    ├── presign/route.js # Generowanie presigned URL do R2
+    ├── photos/route.js  # Pobieranie listy zdjęć
+    └── delete/route.js  # Usuwanie zdjęć
+```
 
 ## Licencja
 
