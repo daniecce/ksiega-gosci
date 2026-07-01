@@ -68,14 +68,14 @@ export async function POST(request) {
 
     const { nazwa, typ, rozmiar } = await request.json()
 
-    if (!DOZWOLONE_TYPY.includes(typ)) {
+    if (!DOZWOLONE_TYPY.includes(typ.toLowerCase())) {
       return Response.json(
         { error: `Niedozwolony typ pliku: ${typ}` },
         { status: 400 }
       )
     }
 
-    const isVideo = typ.startsWith("video/")
+    const isVideo = typ.toLowerCase().startsWith("video/")
     const limit = isVideo ? MAX_ROZMIAR_WIDEO : MAX_ROZMIAR_ZDJECIA
     if (rozmiar > limit) {
       return Response.json(
@@ -94,7 +94,7 @@ export async function POST(request) {
       new PutObjectCommand({
         Bucket: process.env.R2_BUCKET,
         Key: kluczPliku,
-        ContentType: typ,
+        ContentType: typ.toLowerCase()
       }),
       { expiresIn: 300 }  // przepustka ważna 5 minut
     )
