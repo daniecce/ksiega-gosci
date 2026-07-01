@@ -4,8 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 
 const MAX_PLIKOW = 20
-const MAX_ZDJECIE_MB = 25
-const MAX_WIDEO_MB = 100
+const MAX_ZDJECIE_MB = 80
+const MAX_WIDEO_MB = 150
 
 export default function Upload() {
   const [pliki, setPliki] = useState([])
@@ -155,7 +155,7 @@ export default function Upload() {
           <input
             type="file"
             multiple
-            accept="image/*,video/*"
+            accept="image/*,video/*,.dng,.heic,.heif"
             className="hidden"
             onChange={wybierzPliki}
           />
