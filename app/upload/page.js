@@ -36,27 +36,15 @@ export default function Upload() {
     const wybrane = Array.from(e.target.files)
     setBlad(null)
 
-    // Sprawdź liczbę plików
     if (wybrane.length > MAX_PLIKOW) {
       setBlad(`Możesz wybrać maksymalnie ${MAX_PLIKOW} plików naraz`)
       return
     }
 
-    // Sprawdź typy plików
-    // Sprawdź typy plików
-for (const plik of wybrane) {
-  if (!DOZWOLONE_TYPY.includes(plik.type.toLowerCase())) {
-    setBlad(`Niedozwolony typ pliku: ${plik.type}. Dozwolone: zdjęcia i wideo.`)
-    return
-  }
-}
-
-    // Sprawdź rozmiary
     for (const plik of wybrane) {
       const isVideo = plik.type.startsWith("video/")
       const limitMB = isVideo ? MAX_WIDEO_MB : MAX_ZDJECIE_MB
       const rozmiarMB = plik.size / 1024 / 1024
-
       if (rozmiarMB > limitMB) {
         setBlad(`"${plik.name}" jest za duży. Limit: ${limitMB} MB`)
         return
@@ -71,8 +59,17 @@ for (const plik of wybrane) {
     setWysylanie(true)
     setBlad(null)
 
-    try {
-      for (const plik of pliki) {
+    const bledy = []
+    let sukcesy = 0
+
+    for (const plik of pliki) {
+      try {
+        // Pomiń niedozwolone typy zamiast przerywać
+        if (!DOZWOLONE_TYPY.includes(plik.type.toLowerCase())) {
+          bledy.push(`"${plik.name}" — niedozwolony typ pliku`)
+          continue
+        }
+
         const odpowiedzPresign = await fetch("/api/presign", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -86,7 +83,8 @@ for (const plik of wybrane) {
         const danePresign = await odpowiedzPresign.json()
 
         if (!danePresign.ok) {
-          throw new Error(danePresign.error || "Błąd generowania przepustki")
+          bledy.push(`"${plik.name}" — ${danePresign.error}`)
+          continue
         }
 
         const odpowiedzUpload = await fetch(danePresign.presignedUrl, {
@@ -96,17 +94,26 @@ for (const plik of wybrane) {
         })
 
         if (!odpowiedzUpload.ok) {
-          throw new Error(`Błąd wysyłania pliku "${plik.name}"`)
+          bledy.push(`"${plik.name}" — błąd wysyłania`)
+          continue
         }
+
+        sukcesy++
+
+      } catch (err) {
+        bledy.push(`"${plik.name}" — ${err.message}`)
       }
+    }
 
+    setWysylanie(false)
+
+    if (sukcesy === 0) {
+      setBlad("Żaden plik nie został wysłany. Sprawdź formaty i spróbuj ponownie.")
+    } else if (bledy.length > 0) {
       setSukces(true)
-
-    } catch (err) {
-      setBlad(err.message || "Błąd połączenia z serwerem")
-      console.error(err)
-    } finally {
-      setWysylanie(false)
+      setBlad(`Wysłano ${sukcesy} z ${pliki.length} plików. Pominięto: ${bledy.join(", ")}`)
+    } else {
+      setSukces(true)
     }
   }
 
@@ -116,6 +123,11 @@ for (const plik of wybrane) {
       <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-sm flex flex-col items-center gap-6 text-center">
           <p className="text-7xl">✅</p>
+          {blad && (
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3 text-left w-full">
+              <p className="text-orange-600 text-sm">{blad}</p>
+            </div>
+          )}
           <div>
             <h1 className="text-gray-900 text-2xl font-semibold tracking-tight">
               Dziękujemy!
@@ -126,7 +138,7 @@ for (const plik of wybrane) {
           </div>
           <div className="w-full flex flex-col gap-3">
             <button
-              onClick={() => { setPliki([]); setSukces(false) }}
+              onClick={() => { setPliki([]); setSukces(false); setBlad(null) }}
               className="w-full bg-black hover:bg-gray-800 text-white font-medium py-4 rounded-2xl transition-colors"
             >
               Dodaj więcej
@@ -207,7 +219,7 @@ for (const plik of wybrane) {
 
         <button
           onClick={wyslijPliki}
-          disabled={pliki.length === 0 || wysylanie || !!blad}
+          disabled={pliki.length === 0 || wysylanie}
           className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-100 disabled:text-gray-300 text-white font-medium py-4 rounded-2xl text-base transition-colors"
         >
           {wysylanie ? "Wysyłanie..." : "Wyślij do księgi"}
