@@ -43,12 +43,13 @@ export default function Upload() {
     }
 
     // Sprawdź typy plików
-    for (const plik of wybrane) {
-      if (!DOZWOLONE_TYPY.includes(plik.type)) {
-        setBlad(`Niedozwolony typ pliku: ${plik.type}. Dozwolone: zdjęcia i wideo.`)
-        return
-      }
-    }
+    // Sprawdź typy plików
+for (const plik of wybrane) {
+  if (!DOZWOLONE_TYPY.includes(plik.type.toLowerCase())) {
+    setBlad(`Niedozwolony typ pliku: ${plik.type}. Dozwolone: zdjęcia i wideo.`)
+    return
+  }
+}
 
     // Sprawdź rozmiary
     for (const plik of wybrane) {
