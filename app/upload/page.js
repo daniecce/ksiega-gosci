@@ -7,6 +7,25 @@ const MAX_PLIKOW = 20
 const MAX_ZDJECIE_MB = 80
 const MAX_WIDEO_MB = 150
 
+const DOZWOLONE_TYPY = [
+  "image/jpeg",
+  "image/jpg",
+  "image/heic",
+  "image/heif",
+  "image/png",
+  "image/webp",
+  "image/dng",
+  "image/x-adobe-dng",
+  "image/gif",
+  "image/bmp",
+  "video/quicktime",
+  "video/mp4",
+  "video/x-msvideo",
+  "video/x-matroska",
+  "video/webm",
+  "video/3gpp",
+]
+
 export default function Upload() {
   const [pliki, setPliki] = useState([])
   const [wysylanie, setWysylanie] = useState(false)
@@ -21,6 +40,14 @@ export default function Upload() {
     if (wybrane.length > MAX_PLIKOW) {
       setBlad(`Możesz wybrać maksymalnie ${MAX_PLIKOW} plików naraz`)
       return
+    }
+
+    // Sprawdź typy plików
+    for (const plik of wybrane) {
+      if (!DOZWOLONE_TYPY.includes(plik.type)) {
+        setBlad(`Niedozwolony typ pliku: ${plik.type}. Dozwolone: zdjęcia i wideo.`)
+        return
+      }
     }
 
     // Sprawdź rozmiary
@@ -45,7 +72,6 @@ export default function Upload() {
 
     try {
       for (const plik of pliki) {
-        // 1. Poproś serwer o przepustkę (presigned URL)
         const odpowiedzPresign = await fetch("/api/presign", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -62,7 +88,6 @@ export default function Upload() {
           throw new Error(danePresign.error || "Błąd generowania przepustki")
         }
 
-        // 2. Wyślij plik BEZPOŚREDNIO do R2 (omija limit Vercela)
         const odpowiedzUpload = await fetch(danePresign.presignedUrl, {
           method: "PUT",
           headers: { "Content-Type": plik.type },
@@ -124,12 +149,10 @@ export default function Upload() {
     <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-sm flex flex-col gap-6">
 
-        {/* Przycisk powrotu */}
         <Link href="/" className="text-gray-400 hover:text-gray-600 text-sm transition-colors">
           ← Wróć
         </Link>
 
-        {/* Nagłówek */}
         <div>
           <h1 className="text-gray-900 text-2xl font-semibold tracking-tight">
             Dodaj swoje zdjęcia
@@ -139,7 +162,6 @@ export default function Upload() {
           </p>
         </div>
 
-        {/* Limity */}
         <div className="bg-gray-50 rounded-2xl px-4 py-3 flex flex-col gap-1">
           <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Limity</p>
           <p className="text-gray-600 text-sm">📷 Zdjęcia — max {MAX_ZDJECIE_MB} MB / plik</p>
@@ -147,7 +169,6 @@ export default function Upload() {
           <p className="text-gray-600 text-sm">📁 Liczba plików — max {MAX_PLIKOW} naraz</p>
         </div>
 
-        {/* Strefa uploadu */}
         <label className="border-2 border-dashed border-gray-200 hover:border-gray-400 rounded-2xl p-10 flex flex-col items-center gap-3 cursor-pointer transition-colors bg-gray-50">
           <p className="text-5xl">📷</p>
           <p className="text-gray-900 font-medium">Stuknij aby wybrać</p>
@@ -161,14 +182,12 @@ export default function Upload() {
           />
         </label>
 
-        {/* Komunikat błędu */}
         {blad && (
           <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
             <p className="text-red-600 text-sm">{blad}</p>
           </div>
         )}
 
-        {/* Lista wybranych plików */}
         {pliki.length > 0 && (
           <div className="flex flex-col gap-2">
             <p className="text-gray-400 text-xs uppercase tracking-wide">
@@ -185,7 +204,6 @@ export default function Upload() {
           </div>
         )}
 
-        {/* Przycisk wyślij */}
         <button
           onClick={wyslijPliki}
           disabled={pliki.length === 0 || wysylanie || !!blad}

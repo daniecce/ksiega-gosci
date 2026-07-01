@@ -10,16 +10,33 @@ const r2 = new S3Client({
   },
 })
 
-const MAX_ROZMIAR_ZDJECIA = 25 * 1024 * 1024
-const MAX_ROZMIAR_WIDEO = 100 * 1024 * 1024
+const MAX_ROZMIAR_ZDJECIA = 80 * 1024 * 1024
+const MAX_ROZMIAR_WIDEO = 150 * 1024 * 1024
 
 const DOZWOLONE_TYPY = [
+  // Zdjęcia iPhone
   "image/jpeg",
+  "image/jpg",
+  "image/heic",
+  "image/heif",
   "image/png",
   "image/webp",
-  "image/heic",
-  "video/mp4",
-  "video/quicktime",
+  "image/dng",          // Apple ProRAW
+  "image/x-adobe-dng",  
+
+  // Zdjęcia Android
+  "image/gif",          
+  "image/bmp",
+
+  // Wideo iPhone
+  "video/quicktime",    // .mov
+  "video/mp4",          // .mp4
+
+  // Wideo Android
+  "video/x-msvideo",    // .avi
+  "video/x-matroska",   // .mkv
+  "video/webm",         // .webm
+  "video/3gpp",         
 ]
 
 const rateLimitMap = new Map()
